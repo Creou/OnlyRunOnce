@@ -2,6 +2,8 @@
 
 A C# `IEnumerable<T>` extension method that ensures that the enumerable is only evaluated once.
 
+If you just want to grab the extension and don't care about the rest of project, it's all in one place: [RunOnceEnumerableExtensions.cs](https://github.com/Creou/AsRunOnce/blob/master/Creou.AsRunOnce/RunOnceEnumerableExtensions.cs)
+
 Usage:
 
     var willOnlyRunOnce = somethingIEnumerable.OnlyRunOnce();
