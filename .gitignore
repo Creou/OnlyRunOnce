@@ -1,0 +1,31 @@
+# Binaries #
+*.exe
+*.dll
+
+# User config #
+*.suo
+*.user
+
+# Key files #
+*.pfx
+
+.gitignore~
+*.swp
+
+bin/
+obj/
+*.cachefile
+
+.vs/
+
+packages/
+
+#Sql project cache files#
+*.dbmdl
+*.jfm
+
+# Word temp files #
+~*
+
+# Windows thumbnail cache files #
+Thumbs.db
