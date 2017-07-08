@@ -54,9 +54,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Creou.AsRunOnce\Creou.AsRunOnce.csproj">
+    <ProjectReference Include="..\Creou.OnlyRunOnce\Creou.OnlyRunOnce.csproj">
       <Project>{75bdd0ac-5d89-4ed1-8e56-ad1f631bb829}</Project>
-      <Name>Creou.AsRunOnce</Name>
+      <Name>Creou.OnlyRunOnce</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>
