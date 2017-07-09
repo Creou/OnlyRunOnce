@@ -41,30 +41,37 @@ namespace System.Collections.Generic
         {
         }
 
+        private enum EnuermableType
+        {
+            List,
+            Collection,
+            Enumerable
+        }
+
         private abstract class RunOnceEnumerableBase<T> : IRunOnceEnumerable<T>, ICollection<T>
         {
             protected IEnumerator<T> _enumerator;
             protected IList<T> _dataList;
             private ICollection<T> _dataCollection = new List<T>();
 
-            private bool _isList = false;
-            private bool _isCollection = false;
+            private EnuermableType _type;
             protected volatile bool _gotAllData = false;
 
             protected RunOnceEnumerableBase(IEnumerable<T> enumerable)
             {
                 if (enumerable is IList<T>)
                 {
-                    _isList = true;
+                    _type = EnuermableType.List;
                     _dataList = (IList<T>)enumerable;
                 }
                 else if (enumerable is ICollection<T>)
                 {
-                    _isCollection = true;
+                    _type = EnuermableType.Collection;
                     _dataCollection = (ICollection<T>)enumerable;
                 }
                 else
                 {
+                    _type = EnuermableType.Enumerable;
                     _enumerator = enumerable.GetEnumerator();
                     _dataList = new List<T>();
                 }
@@ -74,11 +81,11 @@ namespace System.Collections.Generic
 
             public IEnumerator<T> GetEnumerator()
             {
-                if (_isList || _gotAllData)
+                if (_type == EnuermableType.List || _gotAllData)
                 {
                     return _dataList.GetEnumerator();
                 }
-                else if (_isCollection)
+                else if (_type == EnuermableType.Collection)
                 {
                     return _dataCollection.GetEnumerator();
                 }
@@ -93,11 +100,11 @@ namespace System.Collections.Generic
             {
                 get
                 {
-                    if (_isList || _gotAllData)
+                    if (_type == EnuermableType.List || _gotAllData)
                     {
                         return _dataList.Count;
                     }
-                    else if (_isCollection)
+                    else if (_type == EnuermableType.Collection)
                     {
                         return _dataCollection.Count;
                     }
@@ -120,11 +127,11 @@ namespace System.Collections.Generic
 
             void ICollection<T>.CopyTo(T[] array, int arrayIndex)
             {
-                if (_isList || _gotAllData)
+                if (_type == EnuermableType.List || _gotAllData)
                 {
                     _dataList.CopyTo(array, arrayIndex);
                 }
-                else if (_isCollection)
+                else if (_type == EnuermableType.Collection)
                 {
                     _dataCollection.CopyTo(array, arrayIndex);
                 }

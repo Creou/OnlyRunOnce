@@ -118,8 +118,8 @@ namespace Creou.AsRunOnce.Tests
             var result1 = string.Join(",", asStrings);
             var result2 = string.Join(",", asStrings);
 
-            Assert.AreEqual(result1, expectedResult, "Result1 string must be correct");
-            Assert.AreEqual(result2, expectedResult, "Result2 string must be correct");
+            Assert.AreEqual(expectedResult, result1, "Result1 string must be correct");
+            Assert.AreEqual(expectedResult, result2, "Result2 string must be correct");
 
             Assert.IsTrue(runCount.All(r => r.Value == 1), "All run counts must be 1");
             Assert.IsTrue(runCount.Count == numberInRange, $"Must be {numberInRange} run counts.");
