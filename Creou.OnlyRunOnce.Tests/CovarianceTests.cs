@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Collections.Generic.RunOnceEnumerableExtensions;
 
-namespace Creou.AsRunOnce.Tests
+namespace Creou.OnlyRunOnce.Tests
 {
     [TestClass]
     public class CovarianceTests

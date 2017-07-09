@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Threading;
 
-namespace Creou.AsRunOnce.Tests
+namespace Creou.OnlyRunOnce.Tests
 {
     [TestClass]
     public class RunOnceEnumerableTests

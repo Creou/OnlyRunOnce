@@ -7,8 +7,8 @@
     <ProjectGuid>{75BDD0AC-5D89-4ED1-8E56-AD1F631BB829}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Creou.AsRunOnce</RootNamespace>
-    <AssemblyName>Creou.AsRunOnce</AssemblyName>
+    <RootNamespace>Creou.OnlyRunOnce</RootNamespace>
+    <AssemblyName>Creou.OnlyRunOnce</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

@@ -6,8 +6,8 @@
     <ProjectGuid>{0D14D450-0C6F-4C92-BD01-5BD80CBFD080}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Creou.AsRunOnce.Tests</RootNamespace>
-    <AssemblyName>Creou.AsRunOnce.Tests</AssemblyName>
+    <RootNamespace>Creou.OnlyRunOnce.Tests</RootNamespace>
+    <AssemblyName>Creou.OnlyRunOnce.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>

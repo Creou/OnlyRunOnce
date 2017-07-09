@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Creou.AsRunOnce.Tests
+namespace Creou.OnlyRunOnce.Tests
 {
     [TestClass]
     public class ConcurrentRunOnceEnumerableTests
