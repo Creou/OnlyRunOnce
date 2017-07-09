@@ -23,8 +23,6 @@
  * 
  */
 
-using System.Linq;
-
 namespace System.Collections.Generic
 {
     public static class RunOnceEnumerableExtensions
@@ -39,113 +37,21 @@ namespace System.Collections.Generic
             return new ConcurrentRunOnceEnumerable<T>(source);
         }
 
-        public interface IRunOnceEnumerable<T> : IEnumerable<T>
+        public interface IRunOnceEnumerable<out T> : IEnumerable<T>
         {
-            List<T> ToList();
         }
 
-        private sealed class RunOnceEnumerable<T> : IRunOnceEnumerable<T>
+        private abstract class RunOnceEnumerableBase<T> : IRunOnceEnumerable<T>, ICollection<T>
         {
-            private IEnumerable<T> _enumerable;
-            private IEnumerator<T> _enumerator;
-
-            private int _indexedUpTo;
-            private List<T> _data = new List<T>();
-
-            public RunOnceEnumerable(IEnumerable<T> enumerable)
-            {
-                _enumerable = enumerable;
-                _enumerator = enumerable.GetEnumerator();
-            }
-
-            public IEnumerator<T> GetEnumerator()
-            {
-                if (_enumerable != null)
-                {
-                    return GetRunOnceEnumerator();
-                }
-                else
-                {
-                    return _data.GetEnumerator();
-                }
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-
-            public List<T> ToList()
-            {
-                if (_enumerable != null)
-                {
-                    return Enumerable.ToList(this);
-                }
-                else
-                {
-                    return _data;
-                }
-            }
-
-            private IEnumerator<T> GetRunOnceEnumerator()
-            {
-                int currentIndex = 0;
-                bool isMoreData = true;
-                do
-                {
-                    if (currentIndex < _indexedUpTo)
-                    {
-                        yield return _data[currentIndex];
-                    }
-                    else
-                    {
-                        if (isMoreData = _enumerator.MoveNext())
-                        {
-                            _indexedUpTo++;
-                            _data.Add(_enumerator.Current);
-                            yield return _enumerator.Current;
-                        }
-                        else
-                        {   
-                            // Delete the refernece to the enumerable now we have completed the enumeration, it won't be used again.
-                            _enumerable = null;
-                            _enumerator.Dispose();
-
-                        }
-                    }
-                    currentIndex++;
-                } while (isMoreData);
-            }
-        }
-
-        private sealed class ConcurrentRunOnceEnumerable<T> : IRunOnceEnumerable<T>, ICollection<T>
-        {
-            private IEnumerator<T> _enumerator;
-            private IList<T> _dataList;
+            protected IEnumerator<T> _enumerator;
+            protected IList<T> _dataList;
             private ICollection<T> _dataCollection = new List<T>();
 
             private bool _isList = false;
             private bool _isCollection = false;
-            private volatile int _indexedUpTo = 0;
-            private volatile bool _gotAllData = false;
+            protected volatile bool _gotAllData = false;
 
-            public List<T> ToList()
-            {
-                if (_isList || _gotAllData)
-                {
-                    return _dataList.ToList();
-                }
-                else if (_isCollection)
-                {
-                    return _dataCollection.ToList();
-                }
-                else
-                {
-                    return Enumerable.ToList(this);
-                }
-            }
-
-            public ConcurrentRunOnceEnumerable(IEnumerable<T> enumerable)
+            protected RunOnceEnumerableBase(IEnumerable<T> enumerable)
             {
                 if (enumerable is IList<T>)
                 {
@@ -159,10 +65,13 @@ namespace System.Collections.Generic
                 }
                 else
                 {
-                    this._enumerator = enumerable.GetEnumerator();
+                    _enumerator = enumerable.GetEnumerator();
                     _dataList = new List<T>();
                 }
             }
+
+            protected abstract IEnumerator<T> GetRunOnceEnumerator();
+
             public IEnumerator<T> GetEnumerator()
             {
                 if (_isList || _gotAllData)
@@ -179,6 +88,64 @@ namespace System.Collections.Generic
                 }
             }
 
+
+            int ICollection<T>.Count
+            {
+                get
+                {
+                    if (_isList || _gotAllData)
+                    {
+                        return _dataList.Count;
+                    }
+                    else if (_isCollection)
+                    {
+                        return _dataCollection.Count;
+                    }
+                    else
+                    {
+                        int num = 0;
+                        using (IEnumerator<T> enumerator = this.GetEnumerator())
+                        {
+                            while (enumerator.MoveNext())
+                            {
+                                num++;
+                            }
+                        }
+                        return num;
+                    }
+                }
+            }
+
+            bool ICollection<T>.IsReadOnly => true;
+
+            void ICollection<T>.CopyTo(T[] array, int arrayIndex)
+            {
+                if (_isList || _gotAllData)
+                {
+                    _dataList.CopyTo(array, arrayIndex);
+                }
+                else if (_isCollection)
+                {
+                    _dataCollection.CopyTo(array, arrayIndex);
+                }
+                else
+                {
+                    var _items = new T[0];
+                    int index = 0;
+                    using (IEnumerator<T> enumerator = this.GetEnumerator())
+                    {
+                        while (enumerator.MoveNext())
+                        {
+                            if (index >= arrayIndex)
+                            {
+                                array[index - arrayIndex] = (enumerator.Current);
+                            }
+                            index++;
+                        }
+                    }
+                }
+            }
+
             IEnumerator<T> IEnumerable<T>.GetEnumerator()
             {
                 return GetEnumerator();
@@ -189,7 +156,76 @@ namespace System.Collections.Generic
                 return GetEnumerator();
             }
 
-            private IEnumerator<T> GetRunOnceEnumerator()
+            void ICollection<T>.Add(T item)
+            {
+                throw new NotSupportedException();
+            }
+
+            void ICollection<T>.Clear()
+            {
+                throw new NotSupportedException();
+            }
+
+            bool ICollection<T>.Contains(T item)
+            {
+                throw new NotSupportedException();
+            }
+
+            bool ICollection<T>.Remove(T item)
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        private sealed class RunOnceEnumerable<T> : RunOnceEnumerableBase<T>
+        {
+           private int _indexedUpTo;
+
+            public RunOnceEnumerable(IEnumerable<T> enumerable)
+                : base(enumerable)
+            {
+            }
+
+            protected override IEnumerator<T> GetRunOnceEnumerator()
+            {
+                int currentIndex = 0;
+                bool isMoreData = true;
+                do
+                {
+                    if (currentIndex < _indexedUpTo)
+                    {
+                        yield return _dataList[currentIndex];
+                    }
+                    else
+                    {
+                        if (isMoreData = _enumerator.MoveNext())
+                        {
+                            _indexedUpTo++;
+                            _dataList.Add(_enumerator.Current);
+                            yield return _enumerator.Current;
+                        }
+                        else
+                        {
+                            _gotAllData = true;
+                            _enumerator.Dispose();
+                            _enumerator = null;
+
+                        }
+                    }
+                    currentIndex++;
+                } while (isMoreData);
+            }
+        }
+
+        private sealed class ConcurrentRunOnceEnumerable<T> : RunOnceEnumerableBase<T>
+        {
+            private volatile int _indexedUpTo = 0;
+
+            public ConcurrentRunOnceEnumerable(IEnumerable<T> enumerable) : base(enumerable)
+            {
+            }
+
+            protected override IEnumerator<T> GetRunOnceEnumerator()
             {
                 int currentIndex = 0;
                 bool isMoreData = true;
@@ -246,84 +282,6 @@ namespace System.Collections.Generic
                     currentIndex++;
                 } while (isMoreData);
             }
-
-            int ICollection<T>.Count
-            {
-                get
-                {
-                    if (_isList || _gotAllData)
-                    {
-                        return _dataList.Count;
-                    }
-                    else if (_isCollection)
-                    {
-                        return _dataCollection.Count();
-                    }
-                    else
-                    {
-                        int num = 0;
-                        using (IEnumerator<T> enumerator = this.GetEnumerator())
-                        {
-                            while (enumerator.MoveNext())
-                            {
-                                num++;
-                            }
-                        }
-                        return num;
-                    }
-                }
-            }
-
-            bool ICollection<T>.IsReadOnly => true;
-
-            void ICollection<T>.CopyTo(T[] array, int arrayIndex)
-            {
-                if (_isList || _gotAllData)
-                {
-                    _dataList.CopyTo(array, arrayIndex);
-                }
-                else if (_isCollection)
-                {
-                    _dataCollection.CopyTo(array, arrayIndex);
-                }
-                else
-                {
-                    var _items = new T[0];
-                    int index = 0;
-                    using (IEnumerator<T> enumerator = this.GetEnumerator())
-                    {
-                        while (enumerator.MoveNext())
-                        {
-                            if (index >= arrayIndex)
-                            {
-                                array[index - arrayIndex] = (enumerator.Current);
-                            }
-                            index++;
-                        }
-                    }
-                }
-            }
-
-            void ICollection<T>.Add(T item)
-            {
-                throw new NotSupportedException();
-            }
-
-            void ICollection<T>.Clear()
-            {
-                throw new NotSupportedException();
-            }
-
-            bool ICollection<T>.Contains(T item)
-            {
-                throw new NotSupportedException();
-            }
-
-            bool ICollection<T>.Remove(T item)
-            {
-                throw new NotSupportedException();
-            }
-
         }
     }
 }
