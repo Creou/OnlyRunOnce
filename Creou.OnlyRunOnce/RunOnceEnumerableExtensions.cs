@@ -25,6 +25,10 @@
 
 namespace System.Collections.Generic
 {
+    public interface IRunOnceEnumerable<out T> : IEnumerable<T>
+    {
+    }
+
     public static class RunOnceEnumerableExtensions
     {
         public static IRunOnceEnumerable<T> OnlyRunOnce<T>(this IEnumerable<T> source)
@@ -35,10 +39,6 @@ namespace System.Collections.Generic
         public static IRunOnceEnumerable<T> OnlyRunOnceConcurrentSafe<T>(this IEnumerable<T> source)
         {
             return new ConcurrentRunOnceEnumerable<T>(source);
-        }
-
-        public interface IRunOnceEnumerable<out T> : IEnumerable<T>
-        {
         }
 
         private enum EnuermableType
